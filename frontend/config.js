@@ -1,4 +1,4 @@
-let wpUrl = 'http://localhost:8080/wp-json';
+let wpUrl = 'https://wordpress-140306-965573.cloudwaysapps.com';
 
 // If we're running on Docker, use the WordPress container hostname instead of localhost.
 if (process.env.HOME === '/home/node') {

@@ -1,18 +1,25 @@
-import React, { Component } from 'react';
+import React, {Component, Fragment} from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic'
+import Head from 'next/head';
 import Router from 'next/router';
 import WPAPI from 'wpapi';
 import Layout from '../components/Layout';
+
 import PageWrapper from '../components/PageWrapper';
-import Menu from '../components/Menu';
+import Menu from '../components/Header/index';
+import Footer from '../components/Footer/index';
 import Config from '../config';
 
 const wp = new WPAPI({ endpoint: Config.apiUrl });
 
-const headerImageStyle = {
-  marginTop: 50,
-  marginBottom: 50,
-};
+const Banner = dynamic(() => import('../components/Banner/index'));
+const BottomCTA = dynamic(() => import('../components/BottomCTA/index'));
+const DriveSaleCTA = dynamic(() => import('../components/DriveSaleCTA/index'));
+const DriveSales = dynamic(() => import('../components/DriveSales/index'));
+const RetailEcommerce = dynamic(() => import('../components/RetailEcommerce/index'));
+const SeamlessEcommerce = dynamic(() => import('../components/SeamlessEcommerce/index'));
+
 
 const tokenExpired = () => {
   if (process.browser) {
@@ -32,7 +39,7 @@ class Index extends Component {
       const [page, posts, pages] = await Promise.all([
         wp
           .pages()
-          .slug('welcome')
+          .slug('home')
           .embed()
           .then(data => {
             return data[0];
@@ -43,35 +50,19 @@ class Index extends Component {
 
       return { page, posts, pages };
     } catch (err) {
+        console.log(err);
       if (err.data.status === 403) {
         tokenExpired();
       }
     }
-
     return null;
   }
 
-  componentDidMount() {
-    const token = localStorage.getItem(Config.AUTH_TOKEN);
-    if (token) {
-      wp.setHeaders('Authorization', `Bearer ${token}`);
-      wp.users()
-        .me()
-        .then(data => {
-          const { id } = data;
-          this.setState({ id });
-        })
-        .catch(err => {
-          if (err.data.status === 403) {
-            tokenExpired();
-          }
-        });
-    }
-  }
 
   render() {
     const { id } = this.state;
-    const { posts, pages, headerMenu, page } = this.props;
+    const { posts, pages, headerMenu, page, logo, footerMenu } = this.props;
+    const {acf} = page;
     const fposts = posts.map(post => {
       return (
         <ul key={post.slug}>
@@ -100,50 +91,38 @@ class Index extends Component {
         </ul>
       );
     });
+
+    const Section = acf.sections.map(section => {
+        return (
+            <Fragment key={section.acf_fc_layout}>
+                {section.acf_fc_layout === 'banner' ? <Banner {...section}/> : ''}
+                {section.acf_fc_layout === 'title_and_two_image_columns' ? <SeamlessEcommerce {...section}/> : ''}
+                {section.acf_fc_layout === 'feature_box_with_column' ? <DriveSales {...section}/> : ''}
+                {section.acf_fc_layout === 'bottom_cta' ? <BottomCTA {...section}/> : ''}
+            </Fragment>
+
+        );
+    });
+
     return (
-      <Layout>
-        <Menu menu={headerMenu} />
-        <img
-          src="/static/images/wordpress-plus-react-header.png"
-          width="815"
-          alt="logo"
-          style={headerImageStyle}
-        />
-        <h1>{page.title.rendered}</h1>
-        <div
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{
-            __html: page.content.rendered,
-          }}
-        />
-        <h2>Posts</h2>
-        {fposts}
-        <h2>Pages</h2>
-        {fpages}
-        {id ? (
-          <div>
-            <h2>You Are Logged In</h2>
-            <p>
-              Your user ID is <span>{id}</span>, retrieved via an authenticated
-              API query.
-            </p>
-          </div>
-        ) : (
-          <div>
-            <h2>You Are Not Logged In</h2>
-            <p>
-              The frontend is not making authenticated API requests.{' '}
-              <a href="/login">Log in.</a>
-            </p>
-          </div>
-        )}
-        <h2>Where You're At</h2>
-        <p>
-          You are looking at the REST API-powered React frontend. Be sure to
-          also check out the{' '}
-          <a href="http://localhost:3001/">GraphQL-powered frontend</a>.
-        </p>
-      </Layout>
+        <Fragment>
+            <Head>
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <meta charSet="utf-8" />
+                <title>{page.title.rendered}</title>
+            </Head>
+            <Layout>
+                <Menu menu={headerMenu} logo={logo}/>
+                {Section}
+                <div
+                    // eslint-disable-next-line react/no-danger
+                    dangerouslySetInnerHTML={{
+                        __html: page.content.rendered,
+                    }}
+                />
+                <Footer menu={footerMenu} logo={logo}/>
+            </Layout>
+        </Fragment>
     );
   }
 }

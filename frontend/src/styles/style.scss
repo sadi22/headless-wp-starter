@@ -1,25 +1,8 @@
-@import 'theme-colors';
-$theme-font: 100% verdana, sans-serif;
+@import 'variables';
+@import 'mixin';
+@import 'base';
+@import 'typography';
+@import 'helper';
 
-body {
-  font: $theme-font;
-  background-color: $themeColor-Light;
-  h1,
-  h2 {
-    color: $themeColor-Dark;
-  }
-}
 
-.input-padding {
-  padding: 10px;
-}
 
-.login {
-  display: flex;
-  flex-direction: column;
-  max-width: 300px;
-  .button {
-    height: 40px;
-    margin-top: 20px;
-  }
-}

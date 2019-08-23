@@ -31,3 +31,24 @@ require_once 'inc/acf-options.php';
 
 // Add GraphQL resolvers.
 require_once 'inc/graphql/resolvers.php';
+
+
+// Custom Endpoint
+add_action( 'init', 'setup_init' );
+function setup_init() {
+   add_action( 'rest_api_init', 'bridge_register_wp_api_endpoints' );
+   function bridge_register_wp_api_endpoints() {
+
+        register_rest_route( 'bridge/v1', 'site_logo',array(
+            'methods' => 'GET',
+            'callback' => 'bridge_site_logo',
+        ));
+    }
+
+   function bridge_site_logo($request_data){
+        $custom_logo_id = get_theme_mod( 'custom_logo' );
+         $image = wp_get_attachment_image_src( $custom_logo_id , 'full' );
+         return $image[0];
+   }
+}
+

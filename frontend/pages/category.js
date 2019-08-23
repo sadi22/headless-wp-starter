@@ -3,10 +3,14 @@ import React, { Component } from 'react';
 import Link from 'next/link';
 import Error from 'next/error';
 import WPAPI from 'wpapi';
+import Container from 'react-bootstrap/Container'
+
 import Layout from '../components/Layout';
 import PageWrapper from '../components/PageWrapper';
-import Menu from '../components/Menu';
+import Menu from '../components/Header/index';
 import Config from '../config';
+import Footer from "../components/Footer/index";
+
 
 const wp = new WPAPI({ endpoint: Config.apiUrl });
 
@@ -31,7 +35,7 @@ class Category extends Component {
   }
 
   render() {
-    const { categories, posts, headerMenu } = this.props;
+    const { categories, posts, headerMenu, logo, footerMenu } = this.props;
     if (categories.length === 0) return <Error statusCode={404} />;
 
     const fposts = posts.map(post => {
@@ -49,11 +53,15 @@ class Category extends Component {
       );
     });
     return (
-      <Layout>
-        <Menu menu={headerMenu} />
-        <h1>{categories[0].name} Posts</h1>
-        {fposts}
-      </Layout>
+      <Container>
+        <Layout>
+          <Menu menu={headerMenu} logo={logo}/>
+
+          <h1>{categories[0].name} Posts</h1>
+          {fposts}
+          <Footer logo={logo} menu={footerMenu}/>
+        </Layout>
+      </Container>
     );
   }
 }
